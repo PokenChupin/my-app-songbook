@@ -15,10 +15,18 @@ export default function Content() {
 	const [searched_songs, setSearchSongs] = useState([])
 
 	useEffect(() => {
-		const result = songs.filter(song => {
-			return song[filter].toString().startsWith(search);
-		})
-		setSearchSongs(result)
+		if(search !== ""){
+			const result = songs.reduce((acc, cur) => {
+				const song = cur[filter].toString()
+				if(song.startsWith(search)){
+					acc[0] = [...acc[0], cur]
+				}else if(song.includes(search)){
+					acc[1] = [ ...acc[1], cur]
+				}
+				return acc
+			},[[],[]])
+			setSearchSongs(result.flat())
+		}
 	},[search, filter])
 
     return (
@@ -26,7 +34,6 @@ export default function Content() {
 			<SongTab filter = {filter} setFilter = {setFilter}/>
 			<Searchbar filter = {filter} search = {search} setSearch = {setSearch}/>		
 			<Songtable song_list = {[...songs]} search = {search} searched_songs = {searched_songs}/>
-			{/* <PaginateBar/> */}
 		</div>
     );
   }

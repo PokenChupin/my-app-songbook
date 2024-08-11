@@ -15,7 +15,7 @@ export default function Songbar(props){
                 {SONGNO}
             </div>
             <div class="px-5 py-4 w-4/5">
-                <div class="text-base break-all text-wrap font-semibold">{TITLE}</div>
+                <div class="text-base break-all font-semibold">{TITLE}</div>
                 <div class="font-normal text-gray-500">{SINGER}</div>
                 <div class="font-normal text-gray-500">{LANGUAGE}</div>
                 <div class="font-normal text-gray-500">{GENRE ? "Builtin" : "USB"}</div>

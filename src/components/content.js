@@ -1,22 +1,37 @@
 import SongTab from "./Songtab"
 import Searchbar from "./Searchbar"
 import Songtable from "./Songtable"
-import PaginateBar from "./Paginatebar"
-import song_list from "./songlist"
+import INITIAL_SONGS from "./songlist"
+import ScrollToTop from "./ScrollToTop"
 
 import { useState, useEffect } from "react"
 
 
 export default function Content() {
-
-	const [songs, setSongs] = useState(song_list.sort((a,b) => a.SONGNO - b.SONGNO))
+	const song_list = INITIAL_SONGS.sort((a,b) => a.SONGNO - b.SONGNO)
+	const [songs, setSongs] = useState(song_list)
 	const [filter, setFilter] = useState("TITLE")
 	const [search, setSearch] = useState("")
-	const [searched_songs, setSearchSongs] = useState([])
+	const [isVisible, setIsVisible] = useState(false)
+
+	const handleScroll = () => {
+		if (window.scrollY > 100) {
+			setIsVisible(true);
+		} else {
+			setIsVisible(false);
+		}
+	}
+
+	useEffect(() => {
+		window.addEventListener("scroll", handleScroll);
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, []);
 
 	useEffect(() => {
 		if(search !== ""){
-			const result = songs.reduce((acc, cur) => {
+			const result = song_list.reduce((acc, cur) => {
 				const song = cur[filter].toString()
 				if(song.startsWith(search)){
 					acc[0] = [...acc[0], cur]
@@ -25,15 +40,21 @@ export default function Content() {
 				}
 				return acc
 			},[[],[]])
-			setSearchSongs(result.flat())
+			const searched_songs = result.flat()
+			setSongs(searched_songs)
+		} else {
+			setSongs(song_list)
 		}
 	},[search, filter])
 
     return (
-		<div class="container relative overflow-x-hidden shadow-md mx-auto max-w-md w-full">
+		<div class="container relative overflow-x-hidden shadow-md mx-auto max-w-md w-full scroll-smooth">
 			<SongTab filter = {filter} setFilter = {setFilter}/>
 			<Searchbar filter = {filter} search = {search} setSearch = {setSearch}/>		
-			<Songtable song_list = {[...songs]} search = {search} searched_songs = {searched_songs}/>
+			<Songtable songs = {[...songs]}/>
+			{
+				isVisible && <ScrollToTop/>
+			}
 		</div>
     );
   }

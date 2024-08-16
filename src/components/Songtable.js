@@ -1,38 +1,73 @@
 import Songbar from "./Songbar"
+import { AutoSizer, List, CellMeasurerCache, CellMeasurer, WindowScroller } from "react-virtualized";
 
 export default function Songtable(props){
     
     const {
-        song_list,
-        searched_songs,
-        search,
-        filter
+        songs
     } = {...props}
 
+    const cache = new CellMeasurerCache({
+        fixedWidth: true,
+        defaultHeight: 300
+    });
+
+    const songRenderer = ({ index, key, style, parent }) => {
+        return (
+          <CellMeasurer
+            key={key}
+            cache={cache}
+            parent={parent}
+            columnIndex={0}
+            rowIndex={index}>
+            {({measure,registerChild}) => (
+                <Songbar 
+                    measure={measure} 
+                    ref={registerChild} 
+                    key={key}
+                    style={style}
+                    song={{...songs[index]}}
+                />
+            )}
+          </CellMeasurer>
+        );
+      }
+
     return (
-        <div class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-            <div>
-                {
-                    search ? (
-                        searched_songs.length ?
-                        searched_songs.map( (song) => 
-                            <Songbar song={{...song}} search = {search} filter = {filter}/>
-                        ) :
-                        (
-                            <div
-                                class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 flex">
-                                <div class="px-5 py-4 w-4/5">
-                                    <div class="font-normal text-gray-500 mx-auto">No Song Found</div>
+        <div style={{ flex: '1 1 auto'}} class="w-full">
+            <WindowScroller>
+                {({
+                    height,
+                    isScrolling,
+                    registerChild,
+                    onChildScroll,
+                    scrollTop
+                }) => (
+                    <div>
+                        <AutoSizer disableHeight>
+                            {({ width }) => (
+                                <div ref={registerChild}>
+                                    <List
+                                        ref={el => {
+                                            window.listEl = el;
+                                        }}
+                                        autoHeight
+                                        height={height}
+                                        isScrolling={isScrolling}
+                                        onScroll={onChildScroll}
+                                        overscanRowCount={3}
+                                        rowCount={songs.length}
+                                        rowHeight={cache.rowHeight}
+                                        rowRenderer={songRenderer}
+                                        scrollTop={scrollTop}
+                                        width={width}
+                                    />
                                 </div>
-                            </div>
-                        )
-                    ) : (
-                        song_list.map( (song) => 
-                            <Songbar song={{...song}}/>
-                        ) 
-                    )                    
-                }			
-            </div>
+                            )}
+                        </AutoSizer>
+                    </div>
+                )}
+            </WindowScroller>
         </div>
     )
 }
